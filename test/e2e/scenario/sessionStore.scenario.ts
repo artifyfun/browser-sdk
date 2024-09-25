@@ -7,7 +7,7 @@ describe('Session Stores', () => {
       .withLogs()
       .withRum()
       .run(async () => {
-        const [cookie] = await browser.getCookies([SESSION_STORE_KEY])
+        const [cookie] = await browser.getCookies({ name: SESSION_STORE_KEY })
         const cookieSessionId = cookie.value.match(/id=([\w-]+)/)![1]
 
         const logsContext = await browser.execute(() => window.DD_LOGS?.getInternalContext())
