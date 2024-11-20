@@ -14,3 +14,17 @@ export function runOnReadyState(
   const eventName = expectedReadyState === 'complete' ? DOM_EVENT.LOAD : DOM_EVENT.DOM_CONTENT_LOADED
   return addEventListener(configuration, window, eventName, callback, { once: true })
 }
+
+export function asyncRunOnReadyState(
+  configuration: Configuration,
+  expectedReadyState: 'complete' | 'interactive'
+): Promise<void> {
+  return new Promise((resolve) => {
+    if (document.readyState === expectedReadyState || document.readyState === 'complete') {
+      resolve()
+    } else {
+      const eventName = expectedReadyState === 'complete' ? DOM_EVENT.LOAD : DOM_EVENT.DOM_CONTENT_LOADED
+      addEventListener(configuration, window, eventName, () => resolve(), { once: true })
+    }
+  })
+}
