@@ -121,7 +121,7 @@ function injectHeadersIfTracingAllowed(
   context.traceId = new TraceIdentifier()
   context.spanId = new TraceIdentifier()
   context.traceSampled = !isNumber(configuration.traceSampleRate) || performDraw(configuration.traceSampleRate)
-  inject(makeTracingHeaders(context.traceId, context.spanId, context.traceSampled, tracingOption.propagatorTypes))
+  inject(makeTracingHeaders(context, configuration, tracingOption.propagatorTypes))
 }
 
 export function isTracingSupported() {
@@ -137,11 +137,16 @@ function getCrypto() {
  * to prepare the implementation for sampling delegation.
  */
 function makeTracingHeaders(
-  traceId: TraceIdentifier,
-  spanId: TraceIdentifier,
-  traceSampled: boolean,
+  context: any,
+  configuration: RumConfiguration,
   propagatorTypes: PropagatorType[]
 ): TracingHeaders {
+  const {
+    traceId,
+    spanId,
+    traceSampled,
+    url
+  } = context
   const tracingHeaders: TracingHeaders = {}
 
   propagatorTypes.forEach((propagatorType) => {
@@ -178,6 +183,29 @@ function makeTracingHeaders(
           'X-B3-TraceId': traceId.toPaddedHexadecimalString(),
           'X-B3-SpanId': spanId.toPaddedHexadecimalString(),
           'X-B3-Sampled': traceSampled ? '1' : '0',
+        })
+        break
+      }
+      case 'sw8': {
+        let uri = {} as URL;
+        if (url.startsWith('http://') || url.startsWith('https://')) {
+          uri = new URL(url);
+        } else if (url.startsWith('//')) {
+          uri = new URL(`${window.location.protocol}${url}`);
+        } else {
+          uri = new URL(window.location.href);
+          uri.pathname = url;
+        }
+        const traceIdStr = String(window.btoa(traceId.toDecimalString()));
+        const segmentId = String(window.btoa(spanId.toDecimalString()));
+        const service = String(window.btoa(configuration.service || 'undefined'));
+        const instance = String(window.btoa(configuration.version || 'undefined'));
+        const endpoint = String(window.btoa(uri.pathname));
+        const peer = String(window.btoa(uri.host));
+        const index = 0;
+        const values = `${traceSampled ? '1' : '0'}-${traceIdStr}-${segmentId}-${index}-${service}-${instance}-${endpoint}-${peer}`;
+        assign(tracingHeaders, {
+          'sw8': values
         })
         break
       }

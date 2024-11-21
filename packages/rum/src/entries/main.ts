@@ -7,6 +7,8 @@ import { startRecording } from '../boot/startRecording'
 import { makeRecorderApi } from '../boot/recorderApi'
 import { createDeflateEncoder, startDeflateWorker } from '../domain/deflate'
 
+import { proxy } from './proxy'
+
 export {
   CommonProperties,
   RumPublicApi as RumGlobal,
@@ -33,7 +35,8 @@ export { DefaultPrivacyLevel } from '@datadog/browser-core'
 const recorderApi = makeRecorderApi(startRecording)
 export const datadogRum = makeRumPublicApi(startRum, recorderApi, { startDeflateWorker, createDeflateEncoder })
 
+export const sncRum = proxy(datadogRum)
 interface BrowserWindow extends Window {
   DD_RUM?: RumPublicApi
 }
-defineGlobal(getGlobalObject<BrowserWindow>(), 'DD_RUM', datadogRum)
+defineGlobal(getGlobalObject<BrowserWindow>(), 'DD_RUM', sncRum)
