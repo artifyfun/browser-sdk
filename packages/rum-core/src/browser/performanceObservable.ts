@@ -90,6 +90,7 @@ export interface RumLargestContentfulPaintTiming {
   startTime: RelativeTime
   size: number
   element?: Element
+  url?: string
   toJSON(): Omit<RumLargestContentfulPaintTiming, 'toJSON'>
 }
 
