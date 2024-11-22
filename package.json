@@ -17,6 +17,7 @@
     "dev": "node scripts/dev-server.js",
     "release": "scripts/cli release",
     "version": "scripts/cli version",
+    "copy": "node ./scripts/copy.js",
     "test": "yarn test:unit:watch",
     "test:unit": "karma start ./test/unit/karma.local.conf.js",
     "test:unit:watch": "yarn test:unit --no-single-run",
