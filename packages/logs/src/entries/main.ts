@@ -2,6 +2,7 @@ import { defineGlobal, getGlobalObject } from '@datadog/browser-core'
 import type { LogsPublicApi } from '../boot/logsPublicApi'
 import { makeLogsPublicApi } from '../boot/logsPublicApi'
 import { startLogs } from '../boot/startLogs'
+import { proxy } from './proxy'
 
 export { Logger, LogsMessage, HandlerType } from '../domain/logger'
 export { StatusType } from '../domain/logger/isAuthorized'
@@ -12,7 +13,9 @@ export { LogsEventDomainContext } from '../domainContext.types'
 
 export const datadogLogs = makeLogsPublicApi(startLogs)
 
+export const sncLogs = proxy(datadogLogs)
+
 interface BrowserWindow extends Window {
   DD_LOGS?: LogsPublicApi
 }
-defineGlobal(getGlobalObject<BrowserWindow>(), 'DD_LOGS', datadogLogs)
+defineGlobal(getGlobalObject<BrowserWindow>(), 'DD_LOGS', sncLogs)

@@ -200,10 +200,10 @@ function isString(tag: unknown, tagName: string): tag is string | undefined | nu
 }
 
 function isDatadogSite(site: unknown) {
-  if (site && typeof site === 'string' && !/(datadog|ddog|datad0g|dd0g)/.test(site)) {
-    display.error(`Site should be a valid Datadog site. ${MORE_DETAILS} ${DOCS_ORIGIN}/getting_started/site/.`)
-    return false
-  }
+  // if (site && typeof site === 'string' && !/(datadog|ddog|datad0g|dd0g)/.test(site)) {
+  //   display.error(`Site should be a valid Datadog site. ${MORE_DETAILS} ${DOCS_ORIGIN}/getting_started/site/.`)
+  //   return false
+  // }
   return true
 }
 

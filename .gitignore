@@ -2,6 +2,7 @@ bundle
 cjs
 esm
 node_modules
+dist
 coverage
 tunnel.log
 local.log
