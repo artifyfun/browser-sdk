@@ -24,6 +24,17 @@ export function proxy(target: any) {
   const originInit = target.init
   target.init = function(initConfiguration: any) {
     const options = buildOptions(initConfiguration)
+    console.log('--------rum init--------[initConfiguration]', initConfiguration)
+    setTimeout(() => {
+      try {
+        (globalThis as any).DD_RUM.getInitConfiguration()
+        console.log('--------rum init--------[DD_RUM]', (globalThis as any).DD_RUM)
+        console.log('--------rum init--------[DD_RUM.getInitConfiguration()]', (globalThis as any).DD_RUM.getInitConfiguration())
+        console.log('--------rum init--------[DD_RUM.getInternalContext()]', (globalThis as any).DD_RUM.getInternalContext())
+      } catch (e) {
+        console.log('--------rum init--------[error]', e)
+      }
+    }, 1000)
     return originInit.call(this, options)
   }
   return target

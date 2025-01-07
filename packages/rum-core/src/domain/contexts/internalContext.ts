@@ -34,6 +34,9 @@ export function startInternalContext(
       const viewContext = viewHistory.findView(startTime as RelativeTime)
       const urlContext = urlContexts.findUrl(startTime as RelativeTime)
       const session = sessionManager.findTrackedSession(startTime as RelativeTime)
+      console.log('---------getting internal context---------[viewContext]', viewContext)
+      console.log('---------getting internal context---------[urlContext]', urlContext)
+      console.log('---------getting internal context---------[session]', session)
       if (session && viewContext && urlContext) {
         const actionId = actionContexts.findActionId(startTime as RelativeTime)
         return {

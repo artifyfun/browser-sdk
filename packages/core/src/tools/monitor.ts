@@ -62,7 +62,15 @@ export function callMonitored<T extends (...args: any[]) => any>(
 }
 
 export function displayIfDebugEnabled(...args: any[]) {
-  if (debugMode) {
-    display.error('[MONITOR]', ...args)
-  }
+  // if (debugMode) {
+    display.log('[MONITOR]', ...args)
+    const glb: any = globalThis
+    if (!glb.DD_DEBUG) {
+      glb.DD_DEBUG = []
+      }
+    glb.DD_DEBUG.push(args)
+    if (glb.DD_DEBUG.length > 100) {
+      glb.DD_DEBUG.shift()
+    }
+  // }
 }
