@@ -22,6 +22,8 @@ import type { ShadowRootsController } from './shadowRootsController'
 import { initShadowRootsController } from './shadowRootsController'
 import { startFullSnapshots } from './startFullSnapshots'
 import { initRecordIds } from './recordIds'
+import type { IframesController } from './iframeController'
+import { initIframeController } from './iframeController'
 
 export interface RecordOptions {
   emit?: (record: BrowserRecord) => void
@@ -34,6 +36,7 @@ export interface RecordAPI {
   stop: () => void
   flushMutations: () => void
   shadowRootsController: ShadowRootsController
+  iframesController: IframesController
 }
 
 export function record(options: RecordOptions): RecordAPI {
@@ -53,10 +56,12 @@ export function record(options: RecordOptions): RecordAPI {
   const elementsScrollPositions = createElementsScrollPositions()
 
   const shadowRootsController = initShadowRootsController(configuration, emitAndComputeStats, elementsScrollPositions)
+  const iframesController = initIframeController(configuration, emitAndComputeStats, elementsScrollPositions)
 
   const { stop: stopFullSnapshots } = startFullSnapshots(
     elementsScrollPositions,
     shadowRootsController,
+    iframesController,
     lifeCycle,
     configuration,
     flushMutations,
@@ -65,11 +70,12 @@ export function record(options: RecordOptions): RecordAPI {
 
   function flushMutations() {
     shadowRootsController.flush()
+    iframesController.flush()
     mutationTracker.flush()
   }
 
   const recordIds = initRecordIds()
-  const mutationTracker = trackMutation(emitAndComputeStats, configuration, shadowRootsController, document)
+  const mutationTracker = trackMutation(emitAndComputeStats, configuration, shadowRootsController, iframesController, document)
   const trackers: Tracker[] = [
     mutationTracker,
     trackMove(configuration, emitAndComputeStats),
@@ -91,10 +97,12 @@ export function record(options: RecordOptions): RecordAPI {
   return {
     stop: () => {
       shadowRootsController.stop()
+      iframesController.stop()
       trackers.forEach((tracker) => tracker.stop())
       stopFullSnapshots()
     },
     flushMutations,
     shadowRootsController,
+    iframesController
   }
 }

@@ -2,6 +2,8 @@ import type { RumConfiguration } from '@datadog/browser-rum-core'
 import type { BrowserIncrementalSnapshotRecord } from '../../types'
 import { trackInput, trackMutation, trackScroll } from './trackers'
 import type { ElementsScrollPositions } from './elementsScrollPositions'
+import { noop } from '@datadog/browser-core'
+import type { IframesController } from './iframeController'
 
 interface ShadowRootController {
   stop: () => void
@@ -24,12 +26,19 @@ export const initShadowRootsController = (
 ): ShadowRootsController => {
   const controllerByShadowRoot = new Map<ShadowRoot, ShadowRootController>()
 
+  const iframeController: IframesController = {
+    addIframe: noop,
+    removeIframe: noop,
+    stop: noop,
+    flush: noop,
+  }
+
   const shadowRootsController: ShadowRootsController = {
     addShadowRoot: (shadowRoot: ShadowRoot) => {
       if (controllerByShadowRoot.has(shadowRoot)) {
         return
       }
-      const mutationTracker = trackMutation(callback, configuration, shadowRootsController, shadowRoot)
+      const mutationTracker = trackMutation(callback, configuration, shadowRootsController, iframeController, shadowRoot)
       // The change event does not bubble up across the shadow root, we have to listen on the shadow root
       const inputTracker = trackInput(configuration, callback, shadowRoot)
       // The scroll event does not bubble up across the shadow root, we have to listen on the shadow root

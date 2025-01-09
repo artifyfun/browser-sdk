@@ -7,10 +7,12 @@ import type { ElementsScrollPositions } from './elementsScrollPositions'
 import type { ShadowRootsController } from './shadowRootsController'
 import { SerializationContextStatus, serializeDocument } from './serialization'
 import { getVisualViewport } from './viewports'
+import type { IframesController } from './iframeController'
 
 export function startFullSnapshots(
   elementsScrollPositions: ElementsScrollPositions,
   shadowRootsController: ShadowRootsController,
+  iframesController: IframesController,
   lifeCycle: LifeCycle,
   configuration: RumConfiguration,
   flushMutations: () => void,
@@ -22,6 +24,7 @@ export function startFullSnapshots(
       status: SerializationContextStatus.INITIAL_FULL_SNAPSHOT,
       elementsScrollPositions,
       shadowRootsController,
+      iframesController
     }
   ) => {
     const { width, height } = getViewportDimension()
@@ -72,6 +75,7 @@ export function startFullSnapshots(
     fullSnapshotCallback(
       takeFullSnapshot(view.startClocks.timeStamp, {
         shadowRootsController,
+        iframesController,
         status: SerializationContextStatus.SUBSEQUENT_FULL_SNAPSHOT,
         elementsScrollPositions,
       })

@@ -8,6 +8,7 @@ import {
   getNodePrivacyLevel,
   getTextContent,
   NodePrivacyLevel,
+  isNodeIframeElement,
 } from '@datadog/browser-rum-core'
 import { IncrementalSource } from '../../../types'
 import type {
@@ -30,6 +31,7 @@ import {
 } from '../serialization'
 import { createMutationBatch } from '../mutationBatch'
 import type { ShadowRootCallBack, ShadowRootsController } from '../shadowRootsController'
+import type { IFrameCallback, IframesController } from '../iframeController'
 import { assembleIncrementalSnapshot } from '../assembly'
 import type { Tracker } from './tracker.types'
 
@@ -72,6 +74,7 @@ export function trackMutation(
   mutationCallback: MutationCallBack,
   configuration: RumConfiguration,
   shadowRootsController: ShadowRootsController,
+  iframesController: IframesController,
   target: Node
 ): MutationTracker {
   const MutationObserver = getMutationObserverConstructor()
@@ -84,7 +87,8 @@ export function trackMutation(
       mutations.concat(observer.takeRecords() as RumMutationRecord[]),
       mutationCallback,
       configuration,
-      shadowRootsController
+      shadowRootsController,
+      iframesController
     )
   })
 
@@ -114,7 +118,8 @@ function processMutations(
   mutations: RumMutationRecord[],
   mutationCallback: MutationCallBack,
   configuration: RumConfiguration,
-  shadowRootsController: ShadowRootsController
+  shadowRootsController: ShadowRootsController,
+  iframesController: IframesController
 ) {
   const nodePrivacyLevelCache: NodePrivacyLevelCache = new Map()
 
@@ -122,7 +127,8 @@ function processMutations(
     .filter((mutation): mutation is RumChildListMutationRecord => mutation.type === 'childList')
     .forEach((mutation) => {
       mutation.removedNodes.forEach((removedNode) => {
-        traverseRemovedShadowDom(removedNode, shadowRootsController.removeShadowRoot)
+        // traverseRemovedShadowDom(removedNode, shadowRootsController.removeShadowRoot)
+        traverseRemovedNode(removedNode, shadowRootsController.removeShadowRoot, iframesController.removeIframe)
       })
     })
 
@@ -144,6 +150,7 @@ function processMutations(
     ),
     configuration,
     shadowRootsController,
+    iframesController,
     nodePrivacyLevelCache
   )
 
@@ -178,6 +185,7 @@ function processChildListMutations(
   mutations: Array<WithSerializedTarget<RumChildListMutationRecord>>,
   configuration: RumConfiguration,
   shadowRootsController: ShadowRootsController,
+  iframesController: IframesController,
   nodePrivacyLevelCache: NodePrivacyLevelCache
 ) {
   // First, we iterate over mutations to collect:
@@ -240,7 +248,7 @@ function processChildListMutations(
     const serializedNode = serializeNodeWithId(node, {
       serializedNodeIds,
       parentNodePrivacyLevel,
-      serializationContext: { status: SerializationContextStatus.MUTATION, shadowRootsController },
+      serializationContext: { status: SerializationContextStatus.MUTATION, shadowRootsController, iframesController },
       configuration,
     })
     if (!serializedNode) {
@@ -411,4 +419,21 @@ function traverseRemovedShadowDom(removedNode: Node, shadowDomRemovedCallback: S
     shadowDomRemovedCallback(removedNode.shadowRoot)
   }
   forEachChildNodes(removedNode, (childNode) => traverseRemovedShadowDom(childNode, shadowDomRemovedCallback))
+}
+
+function traverseRemovedNode(
+  removedNode: Node,
+  shadowDomRemovedCallback: ShadowRootCallBack,
+  iframeRemovedCallback: IFrameCallback
+) {
+  if (isNodeShadowHost(removedNode)) {
+    shadowDomRemovedCallback(removedNode.shadowRoot)
+  }
+  forEachChildNodes(removedNode, (child) => traverseRemovedShadowDom(child, shadowDomRemovedCallback))
+  if (isNodeIframeElement(removedNode)) {
+    iframeRemovedCallback(removedNode)
+  }
+  forEachChildNodes(removedNode, (child) =>
+    traverseRemovedNode(child, shadowDomRemovedCallback, iframeRemovedCallback)
+  )
 }

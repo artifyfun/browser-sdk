@@ -3,6 +3,7 @@ import {
   getNodeSelfPrivacyLevel,
   getTextContent,
   isNodeShadowRoot,
+  isNodeIframeElement,
   hasChildNodes,
   forEachChildNodes,
   NodePrivacyLevel,
@@ -177,6 +178,14 @@ function serializeElementNode(element: Element, options: SerializeOptions): Elem
       })
     }
     childNodes = serializeChildNodes(element, childNodesSerializationOptions)
+  }
+
+  if (isNodeIframeElement(element) && element.contentDocument) {
+    options.serializationContext.iframesController.addIframe(element)
+    const iframeDocument = serializeNodeWithId(element.contentDocument, options)
+    if (iframeDocument !== null) {
+      childNodes.push(iframeDocument)
+    }
   }
 
   return {
