@@ -1,6 +1,6 @@
 {
   "name": "@datadog/browser-rum",
-  "version": "5.32.0",
+  "version": "5.32.1",
   "license": "Apache-2.0",
   "main": "cjs/entries/main.js",
   "module": "esm/entries/main.js",
@@ -13,12 +13,12 @@
     "replace-build-env": "node ../../scripts/build/replace-build-env.js"
   },
   "dependencies": {
-    "@datadog/browser-core": "5.32.0",
-    "@datadog/browser-rum-core": "5.32.0",
+    "@datadog/browser-core": "5.32.1",
+    "@datadog/browser-rum-core": "5.32.1",
     "@rrweb/all": "2.0.0-alpha.18"
   },
   "peerDependencies": {
-    "@datadog/browser-logs": "5.32.0"
+    "@datadog/browser-logs": "5.32.1"
   },
   "peerDependenciesMeta": {
     "@datadog/browser-logs": {
