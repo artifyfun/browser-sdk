@@ -344,6 +344,7 @@ export interface RumContext {
     configuration: {
       session_sample_rate: number
       session_replay_sample_rate: number
+      session_replay_recorder: string | undefined
     }
     browser_sdk_version?: string
   }
