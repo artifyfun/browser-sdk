@@ -14,7 +14,8 @@
   },
   "dependencies": {
     "@datadog/browser-core": "5.32.0",
-    "@datadog/browser-rum-core": "5.32.0"
+    "@datadog/browser-rum-core": "5.32.0",
+    "@rrweb/all": "2.0.0-alpha.18"
   },
   "peerDependencies": {
     "@datadog/browser-logs": "5.32.0"
@@ -30,6 +31,7 @@
     "directory": "packages/rum"
   },
   "devDependencies": {
+    "@rrweb/types": "^2.0.0-alpha.18",
     "@types/pako": "2.0.3",
     "pako": "2.1.0"
   },
