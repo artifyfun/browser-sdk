@@ -5,6 +5,7 @@ import { addEventListeners, addEventListener, DOM_EVENT } from './addEventListen
 
 export const PageExitReason = {
   HIDDEN: 'visibility_hidden',
+  VISIBLE: 'visibility_visible',
   UNLOADING: 'before_unload',
   PAGEHIDE: 'page_hide',
   FROZEN: 'page_frozen',
@@ -29,6 +30,8 @@ export function createPageExitObservable(configuration: Configuration): Observab
            * (e.g. when user switches to a different application, goes to homescreen, etc), or is being unloaded.
            */
           observable.notify({ reason: PageExitReason.HIDDEN })
+        } else if (event.type === DOM_EVENT.VISIBILITY_CHANGE && document.visibilityState === 'visible') {
+          observable.notify({ reason: PageExitReason.VISIBLE })
         } else if (event.type === DOM_EVENT.FREEZE) {
           /**
            * After transitioning in background a tab can be freezed to preserve resources. (cf: https://developer.chrome.com/blog/page-lifecycle-api)

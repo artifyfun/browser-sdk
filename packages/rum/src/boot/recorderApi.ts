@@ -110,8 +110,10 @@ export function makeRecorderApi(
 
       // Stop the recorder on page unload to avoid sending records after the page is ended.
       lifeCycle.subscribe(LifeCycleEventType.PAGE_EXITED, (pageExitEvent) => {
-        if (pageExitEvent.reason === PageExitReason.UNLOADING) {
+        if (pageExitEvent.reason === PageExitReason.UNLOADING || pageExitEvent.reason === PageExitReason.HIDDEN) {
           stopStrategy()
+        } else if (pageExitEvent.reason === PageExitReason.VISIBLE) {
+          startStrategy()
         }
       })
 
