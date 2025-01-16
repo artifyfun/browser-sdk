@@ -22,6 +22,12 @@
 
 **Internal Changes:**
 
+- 修复 切换tab页时的录制逻辑 [LOGS] [RUM] [RUM-REACT] [RUM-SLIM] [WORKER]
+
+## v5.32.1
+
+**Internal Changes:**
+
 - 修复 version 命令
 - 修改 package 仓库地址 [LOGS] [RUM] [RUM-REACT] [RUM-SLIM] [WORKER]
 
