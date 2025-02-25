@@ -18,6 +18,13 @@
 
 ---
 
+## v5.32.3
+
+**Internal Changes:**
+
+- 调整 rrweb 初始化配置项 [RUM]
+- 修复 切换tab页时的录制逻辑 [LOGS] [RUM] [RUM-REACT] [RUM-SLIM] [WORKER]
+
 ## v5.32.1
 
 **Internal Changes:**
