@@ -96,9 +96,10 @@ export function makeRecorderApi(
       configuration: RumConfiguration,
       sessionManager: RumSessionManager,
       viewHistory: ViewHistory,
-      worker
+      worker,
+      userContextManager
     ) => {
-      if (configuration.startSessionReplayRecordingManually) {
+      if (configuration.startSessionReplayRecordingManually || !!configuration.allowedSessionReplayRecordUserIds) {
         state = { status: RecorderStatus.Stopped }
       }
       lifeCycle.subscribe(LifeCycleEventType.SESSION_EXPIRED, () => {
@@ -122,6 +123,33 @@ export function makeRecorderApi(
           startStrategy()
         }
       })
+
+      // 订阅用户变化
+      if (userContextManager && configuration.allowedSessionReplayRecordUserIds) {
+        userContextManager.changeObservable.subscribe(() => {
+          const user = userContextManager.getContext()
+          const userId = user.id
+          let allowed = false
+          if (userId) {
+            if (Array.isArray(configuration.allowedSessionReplayRecordUserIds)) {
+              allowed = configuration.allowedSessionReplayRecordUserIds.includes(userId.toString())
+            } else if (typeof configuration.allowedSessionReplayRecordUserIds === 'function') {
+              allowed = configuration.allowedSessionReplayRecordUserIds(userId.toString())
+            }
+          } else {
+            allowed = false
+          }
+          if (allowed) {
+            if (state.status !== RecorderStatus.Started && state.status !== RecorderStatus.Starting) {
+              startStrategy()
+            }
+          } else {
+            if (state.status === RecorderStatus.Started || state.status === RecorderStatus.Starting) {
+              stopStrategy()
+            }
+          }
+        })
+      }
 
       let cachedDeflateEncoder: DeflateEncoder | undefined
 

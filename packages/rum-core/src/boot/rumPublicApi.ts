@@ -9,6 +9,7 @@ import type {
   TrackingConsent,
   PublicApi,
   Duration,
+  ContextManager,
 } from '@datadog/browser-core'
 import {
   addTelemetryUsage,
@@ -319,7 +320,8 @@ export interface RecorderApi {
     configuration: RumConfiguration,
     sessionManager: RumSessionManager,
     viewHistory: ViewHistory,
-    deflateWorker: DeflateWorker | undefined
+    deflateWorker: DeflateWorker | undefined,
+    userContextManager: ContextManager
   ) => void
   isRecording: () => boolean
   getReplayStats: (viewId: string) => ReplayStats | undefined
@@ -410,7 +412,8 @@ export function makeRumPublicApi(
         configuration,
         startRumResult.session,
         startRumResult.viewHistory,
-        deflateWorker
+        deflateWorker,
+        userContextManager
       )
 
       strategy = createPostStartStrategy(strategy, startRumResult)
