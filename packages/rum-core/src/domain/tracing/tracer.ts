@@ -157,12 +157,13 @@ function makeTracingHeaders(
 
   propagatorTypes.forEach((propagatorType) => {
     switch (propagatorType) {
-      case 'datadog': {
+      case 'datadog':
+      case 'shsnc': {
         assign(tracingHeaders, {
-          'x-datadog-origin': 'rum',
-          'x-datadog-parent-id': spanId.toDecimalString(),
-          'x-datadog-sampling-priority': traceSampled ? '1' : '0',
-          'x-datadog-trace-id': traceId.toDecimalString(),
+          'x-shsnc-origin': 'rum',
+          'x-shsnc-parent-id': spanId.toDecimalString(),
+          'x-shsnc-sampling-priority': traceSampled ? '1' : '0',
+          'x-shsnc-trace-id': traceId.toDecimalString(),
         })
         break
       }
