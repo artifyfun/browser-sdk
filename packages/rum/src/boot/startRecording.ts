@@ -48,9 +48,6 @@ export function startRecording(
 
   if (configuration.sessionReplayRecorder === 'rrweb') {
     stopRecording = rrwebRecorder({
-      recordCanvas: true, // 是否记录 canvas 内容
-      recordCrossOriginIframes: true, //	是否记录 cross origin iframes。 必须在每个子 iframe 中注入 rrweb 才能使其工作
-      inlineStylesheet: false, // 是否将样式表内联, 默认为 true, 开启可能会导致页面卡死（样式表过多）
       ...configuration.rrwebOptions,
       // checkoutEveryNth: undefined, // 每 N 次事件重新制作一次全量快照
       // checkoutEveryNms: undefined, // 每 N 毫秒重新制作一次全量快照
@@ -60,15 +57,18 @@ export function startRecording(
       // ignoreCSSAttributes: undefined, //	应该被忽略的 CSS 属性数组
       // maskTextClass:'rr-mask', //	字符串或正则表达式，可用于自定义忽略元素 text 内容的类名
       // maskTextSelector:	undefined, //所有 element.matches(maskTextSelector)为 true 的元素及其子元素的 text 内容将会被屏蔽
-      maskAllInputs: ['mask-user-input', 'mask'].includes(configuration.defaultPrivacyLevel), // 将所有输入内容记录为 *
+      // maskAllInputs: false, // 将所有输入内容记录为 *
       // maskInputOptions:	{ password: true }, // 选择将特定类型的输入框内容记录为 *
       // maskInputFn: undefined,	// 自定义特定类型的输入框内容记录逻辑
       // maskTextFn: undefined, // 自定义文字内容的记录逻辑
       // slimDOMOptions:	{}, // 去除 DOM 中不必要的部分
+      inlineStylesheet:	false, // 是否将样式表内联, 默认为 true, 开启可能会导致页面卡死（样式表过多）
       // hooks: {}, //	各类事件的回调
       // packFn: undefined, // 数据压缩函数
       // sampling: undefined, //	数据抽样策略
       // dataURLOptions: {},	// Canvas 图像快照的格式和质量, 这个参数将传递给 OffscreenCanvas.convertToBlob()，使用这个参数能有效减小录制数据的大小
+      recordCanvas:	false, // 是否记录 canvas 内容
+      recordCrossOriginIframes:	true, //	是否记录 cross origin iframes。 必须在每个子 iframe 中注入 rrweb 才能使其工作
       // recordAfter: 'load', // 如果 document 还没有加载完成，recorder 将会在指定的事件触发后开始录制。可用选项： DOMContentLoaded, load
       // inlineImages:	false, //	是否将图片内容记内联录制
       // collectFonts:	false, //	是否记录页面中的字体文件
