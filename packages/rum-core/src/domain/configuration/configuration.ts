@@ -92,7 +92,6 @@ export interface RumInitConfiguration extends InitConfiguration {
   sessionReplaySampleRate?: number | undefined
   sessionReplayRecorder?: 'default' | 'rrweb' | undefined
   rrwebOptions?: recordOptions<any> | undefined
-  allowedSessionReplayRecordUserIds?: string[] | ((userId: string) => boolean) | undefined
   /**
    * If the session is sampled for Session Replay, only start the recording when `startSessionReplayRecording()` is called, instead of at the beginning of the session.
    * See [Session Replay Usage](https://docs.datadoghq.com/real_user_monitoring/session_replay/browser/#usage) for further information.
@@ -152,7 +151,6 @@ export interface RumConfiguration extends Configuration {
   sessionReplaySampleRate: number
   sessionReplayRecorder?: string | undefined
   rrwebOptions?: recordOptions<any> | undefined
-  allowedSessionReplayRecordUserIds?: string[] | ((userId: string) => boolean) | undefined
   startSessionReplayRecordingManually: boolean
   trackUserInteractions: boolean
   trackViewsManually: boolean
@@ -203,7 +201,6 @@ export function validateAndBuildRumConfiguration(
       sessionReplaySampleRate: initConfiguration.sessionReplaySampleRate ?? 0,
       sessionReplayRecorder: initConfiguration.sessionReplayRecorder ?? 'default',
       rrwebOptions: initConfiguration.rrwebOptions || undefined,
-      allowedSessionReplayRecordUserIds: initConfiguration.allowedSessionReplayRecordUserIds,
       startSessionReplayRecordingManually: !!initConfiguration.startSessionReplayRecordingManually,
       traceSampleRate: initConfiguration.traceSampleRate,
       allowedTracingUrls,
