@@ -12,7 +12,6 @@ import {
   validateAndBuildConfiguration,
   isSampleRate,
 } from '@datadog/browser-core'
-import type { recordOptions } from 'rrweb'
 import type { RumEventDomainContext } from '../../domainContext.types'
 import type { RumEvent } from '../../rumEvent.types'
 import type { RumPlugin } from '../plugins'
@@ -90,8 +89,6 @@ export interface RumInitConfiguration extends InitConfiguration {
    * See [Configure Your Setup For Browser RUM and Browser RUM & Session Replay Sampling](https://docs.datadoghq.com/real_user_monitoring/guide/sampling-browser-plans) for further information.
    */
   sessionReplaySampleRate?: number | undefined
-  sessionReplayRecorder?: 'default' | 'rrweb' | undefined
-  rrwebOptions?: recordOptions<any> | undefined
   /**
    * If the session is sampled for Session Replay, only start the recording when `startSessionReplayRecording()` is called, instead of at the beginning of the session.
    * See [Session Replay Usage](https://docs.datadoghq.com/real_user_monitoring/session_replay/browser/#usage) for further information.
@@ -149,8 +146,6 @@ export interface RumConfiguration extends Configuration {
   defaultPrivacyLevel: DefaultPrivacyLevel
   enablePrivacyForActionName: boolean
   sessionReplaySampleRate: number
-  sessionReplayRecorder?: string | undefined
-  rrwebOptions?: recordOptions<any> | undefined
   startSessionReplayRecordingManually: boolean
   trackUserInteractions: boolean
   trackViewsManually: boolean
@@ -199,8 +194,6 @@ export function validateAndBuildRumConfiguration(
       version: initConfiguration.version || undefined,
       actionNameAttribute: initConfiguration.actionNameAttribute,
       sessionReplaySampleRate: initConfiguration.sessionReplaySampleRate ?? 0,
-      sessionReplayRecorder: initConfiguration.sessionReplayRecorder ?? 'default',
-      rrwebOptions: initConfiguration.rrwebOptions || undefined,
       startSessionReplayRecordingManually: !!initConfiguration.startSessionReplayRecordingManually,
       traceSampleRate: initConfiguration.traceSampleRate,
       allowedTracingUrls,
@@ -285,7 +278,6 @@ export function serializeRumConfiguration(configuration: RumInitConfiguration) {
   return assign(
     {
       session_replay_sample_rate: configuration.sessionReplaySampleRate,
-      session_replay_recorder: configuration.sessionReplayRecorder,
       start_session_replay_recording_manually: configuration.startSessionReplayRecordingManually,
       trace_sample_rate: configuration.traceSampleRate,
       trace_context_injection: configuration.traceContextInjection,
