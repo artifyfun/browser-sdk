@@ -20,6 +20,37 @@ import type {
 import type { RumSessionManager } from '../rumSessionManager'
 import type { PropagatorType, TracingOption } from './tracer.types'
 
+// 兼容IE的URL解析函数
+function parseURL(url: string) {
+  // 创建一个锚元素来解析URL
+  var parser = document.createElement('a');
+
+  if (url.indexOf('http://') === 0 || url.indexOf('https://') === 0) {
+    parser.href = url;
+  } else if (url.indexOf('//') === 0) {
+    parser.href = window.location.protocol + url;
+  } else {
+    parser.href = window.location.href;
+    // 处理路径名
+    var basePath = window.location.pathname;
+    var lastSlashIndex = basePath.lastIndexOf('/');
+    if (lastSlashIndex >= 0) {
+      basePath = basePath.substring(0, lastSlashIndex + 1);
+    }
+    parser.href = window.location.origin + basePath + url;
+  }
+
+  return {
+    protocol: parser.protocol,
+    host: parser.host,
+    hostname: parser.hostname,
+    port: parser.port,
+    pathname: parser.pathname,
+    search: parser.search,
+    hash: parser.hash
+  };
+}
+
 export interface Tracer {
   traceFetch: (context: Partial<RumFetchStartContext>) => void
   traceXhr: (context: Partial<RumXhrStartContext>, xhr: XMLHttpRequest) => void
@@ -194,13 +225,13 @@ function makeTracingHeaders(
         break
       }
       case 'sw8': {
-        let uri = {} as URL;
-        if (url.startsWith('http://') || url.startsWith('https://')) {
-          uri = new URL(url);
-        } else if (url.startsWith('//')) {
-          uri = new URL(`${window.location.protocol}${url}`);
+        let uri = {} as any;
+        if (url.indexOf('http://') === 0 || url.indexOf('https://') === 0) {
+          uri = parseURL(url);
+        } else if (url.indexOf('//') === 0) {
+          uri = parseURL(window.location.protocol + url);
         } else {
-          uri = new URL(window.location.href);
+          uri = parseURL(window.location.href);
           uri.pathname = url;
         }
         const traceIdStr = String(window.btoa(traceId.toDecimalString()));
@@ -210,7 +241,8 @@ function makeTracingHeaders(
         const endpoint = String(window.btoa(uri.pathname));
         const peer = String(window.btoa(uri.host));
         const index = 0;
-        const values = `${traceSampled ? '1' : '0'}-${traceIdStr}-${segmentId}-${index}-${service}-${instance}-${endpoint}-${peer}`;
+        const values = (traceSampled ? '1' : '0') + '-' + traceIdStr + '-' + segmentId + '-' +
+          index + '-' + service + '-' + instance + '-' + endpoint + '-' + peer;
         assign(tracingHeaders, {
           'sw8': values
         })
@@ -228,8 +260,28 @@ export interface TraceIdentifier {
 }
 
 export function createTraceIdentifier(): TraceIdentifier {
-  const buffer: Uint8Array = new Uint8Array(8)
-  getCrypto().getRandomValues(buffer)
+  var isIE = !!(window as any).MSInputMethodContext && !!(window as any).documentMode;
+  const crypto = getCrypto()
+  let buffer: Uint8Array | Int32Array
+
+  // IE11兼容性处理
+  if (isIE && crypto === (window as any).msCrypto) {
+    // IE11只支持Int32Array
+    const int32Buffer = new Int32Array(2) // 8字节 = 2个int32
+    crypto.getRandomValues(int32Buffer)
+
+    // 转换为Uint8Array格式
+    buffer = new Uint8Array(8)
+    const view = new DataView(int32Buffer.buffer)
+    for (let i = 0; i < 8; i++) {
+      buffer[i] = view.getUint8(i)
+    }
+  } else {
+    // 现代浏览器
+    buffer = new Uint8Array(8)
+    crypto.getRandomValues(buffer)
+  }
+
   buffer[0] = buffer[0] & 0x7f // force 63-bit
 
   function readInt32(offset: number) {

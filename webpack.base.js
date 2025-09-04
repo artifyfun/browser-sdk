@@ -19,17 +19,28 @@ module.exports = ({ entry, mode, filename, types, keepBuildEnvVariables, plugins
     rules: [
       {
         test: /\.(ts|tsx|js)$/,
-        loader: 'ts-loader',
-        exclude: /node_modules/,
-        options: {
-          configFile: tsconfigPath,
-          onlyCompileBundledFiles: true,
-          compilerOptions: {
-            module: 'es6',
-            allowJs: true,
-            types: types || [],
+        use: [
+          {
+            loader: 'babel-loader',
+            options: {
+              presets: ['@babel/preset-env'],
+              plugins: ['@babel/plugin-transform-runtime']
+            }
           },
-        },
+          {
+            loader: 'ts-loader',
+            options: {
+              configFile: tsconfigPath,
+              onlyCompileBundledFiles: true,
+              compilerOptions: {
+                module: 'es6',
+                allowJs: true,
+                types: types || [],
+              },
+            },
+          }
+        ],
+        exclude: /node_modules/,
       },
     ],
   },
