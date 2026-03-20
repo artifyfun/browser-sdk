@@ -72,7 +72,9 @@ export function startTracer(configuration: RumConfiguration, sessionManager: Rum
         if (context.input instanceof Request && !context.init?.headers) {
           context.input = new Request(context.input)
           Object.keys(tracingHeaders).forEach((key) => {
-            ;(context.input as Request).headers.append(key, tracingHeaders[key])
+            if (!(context.input as Request).headers.has(key)) {
+              ;(context.input as Request).headers.append(key, tracingHeaders[key])
+            }
           })
         } else {
           context.init = shallowClone(context.init)
@@ -90,14 +92,20 @@ export function startTracer(configuration: RumConfiguration, sessionManager: Rum
               headers.push([key, (context.init!.headers as Record<string, string>)[key]])
             })
           }
-          context.init.headers = headers.concat(objectEntries(tracingHeaders))
+          const headersToAdd = objectEntries(tracingHeaders).filter(
+            ([key]) => !headers.some(([existingKey]) => existingKey.toLowerCase() === key.toLowerCase())
+          )
+          context.init.headers = headers.concat(headersToAdd)
         }
       }),
     traceXhr: (context, xhr) =>
       injectHeadersIfTracingAllowed(configuration, context, sessionManager, (tracingHeaders: TracingHeaders) => {
-        Object.keys(tracingHeaders).forEach((name) => {
-          xhr.setRequestHeader(name, tracingHeaders[name])
-        })
+        if (!(xhr as any)._shsnc_tracing_injected) {
+          ;(xhr as any)._shsnc_tracing_injected = true
+          Object.keys(tracingHeaders).forEach((name) => {
+            xhr.setRequestHeader(name, tracingHeaders[name])
+          })
+        }
       }),
   }
 }
@@ -108,7 +116,7 @@ function injectHeadersIfTracingAllowed(
   sessionManager: RumSessionManager,
   inject: (tracingHeaders: TracingHeaders) => void
 ) {
-  if (!isTracingSupported() || !sessionManager.findTrackedSession()) {
+  if (!isTracingSupported() || !sessionManager.findTrackedSession() || context.traceId) {
     return
   }
 
