@@ -309,6 +309,9 @@ export function serializeRumConfiguration(configuration: RumInitConfiguration) {
       plugins: configuration.plugins?.map((plugin) =>
         assign({ name: plugin.name }, plugin.getConfigurationTelemetry?.())
       ),
+      session_replay_rrweb_options: configuration.rrwebOptions,
+      has_allowed_session_replay_record_user_ids: !!configuration.allowedSessionReplayRecordUserIds,
+      subdomain: configuration.subdomain,
     },
     baseSerializedConfiguration
   ) satisfies RawTelemetryConfiguration

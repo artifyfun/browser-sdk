@@ -11,6 +11,7 @@ import type {
   Connectivity,
   Csp,
 } from '@datadog/browser-core'
+import type { recordOptions } from 'rrweb'
 import type { PageState } from './domain/contexts/pageStateHistory'
 
 export const enum RumEventType {
@@ -345,6 +346,7 @@ export interface RumContext {
       session_sample_rate: number
       session_replay_sample_rate: number
       session_replay_recorder: string | undefined
+      session_replay_rrweb_options?: recordOptions<any>
     }
     browser_sdk_version?: string
   }
