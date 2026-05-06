@@ -68,7 +68,7 @@ export function tryToComputeCoordinates(event: MouseEvent | TouchEvent) {
     x = visualViewportX
     y = visualViewportY
   }
-  if (!Number.isFinite(x) || !Number.isFinite(y)) {
+  if (!isFinite(x) || !isFinite(y)) {
     if (event.isTrusted) {
       addTelemetryDebug('mouse/touch event without x/y')
     }

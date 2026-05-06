@@ -37,7 +37,7 @@ function parseURL(url: string) {
     if (lastSlashIndex >= 0) {
       basePath = basePath.substring(0, lastSlashIndex + 1);
     }
-    parser.href = window.location.origin + basePath + url;
+    parser.href = window.location.protocol + '//' + window.location.host + basePath + url;
   }
 
   return {
@@ -234,12 +234,19 @@ function makeTracingHeaders(
           uri = parseURL(window.location.href);
           uri.pathname = url;
         }
-        const traceIdStr = String(window.btoa(traceId.toDecimalString()));
-        const segmentId = String(window.btoa(spanId.toDecimalString()));
-        const service = String(window.btoa(configuration.service || 'undefined'));
-        const instance = String(window.btoa(configuration.version || 'undefined'));
-        const endpoint = String(window.btoa(uri.pathname));
-        const peer = String(window.btoa(uri.host));
+        var safeBtoa = function(str: string) {
+          try {
+            return window.btoa(unescape(encodeURIComponent(str)))
+          } catch (e) {
+            return ''
+          }
+        }
+        const traceIdStr = safeBtoa(traceId.toDecimalString());
+        const segmentId = safeBtoa(spanId.toDecimalString());
+        const service = safeBtoa(configuration.service || 'undefined');
+        const instance = safeBtoa(configuration.version || 'undefined');
+        const endpoint = safeBtoa(uri.pathname);
+        const peer = safeBtoa(uri.host);
         const index = 0;
         const values = (traceSampled ? '1' : '0') + '-' + traceIdStr + '-' + segmentId + '-' +
           index + '-' + service + '-' + instance + '-' + endpoint + '-' + peer;

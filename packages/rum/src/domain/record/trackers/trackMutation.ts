@@ -1,4 +1,4 @@
-import { monitor, noop } from '@datadog/browser-core'
+import { forEach, monitor, noop } from '@datadog/browser-core'
 import type { RumConfiguration, NodePrivacyLevelCache } from '@datadog/browser-rum-core'
 import {
   isNodeShadowHost,
@@ -121,7 +121,7 @@ function processMutations(
   mutations
     .filter((mutation): mutation is RumChildListMutationRecord => mutation.type === 'childList')
     .forEach((mutation) => {
-      mutation.removedNodes.forEach((removedNode) => {
+      forEach(mutation.removedNodes, (removedNode) => {
         traverseRemovedShadowDom(removedNode, shadowRootsController.removeShadowRoot)
       })
     })
@@ -194,10 +194,10 @@ function processChildListMutations(
   const addedAndMovedNodes = new Set<Node>()
   const removedNodes = new Map<Node, NodeWithSerializedNode>()
   for (const mutation of mutations) {
-    mutation.addedNodes.forEach((node) => {
+    forEach(mutation.addedNodes, (node) => {
       addedAndMovedNodes.add(node)
     })
-    mutation.removedNodes.forEach((node) => {
+    forEach(mutation.removedNodes, (node) => {
       if (!addedAndMovedNodes.has(node)) {
         removedNodes.set(node, mutation.target)
       }

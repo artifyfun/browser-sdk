@@ -6,7 +6,12 @@ var host = location.host;
 
 function buildOptions(origin: any) {
   if (origin === void 0) { origin = {}; }
-  var options = { ...origin };
+  var options: any = {};
+  for (var key in origin) {
+    if (Object.prototype.hasOwnProperty.call(origin, key)) {
+      options[key] = origin[key];
+    }
+  }
   if (typeof options.baseUrl !== 'string') {
     options.baseUrl = '';
   }

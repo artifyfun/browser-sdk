@@ -1,4 +1,4 @@
-import { instrumentMethod } from '@datadog/browser-core'
+import { arrayFrom, instrumentMethod } from '@datadog/browser-core'
 import { IncrementalSource } from '../../../types'
 import type { StyleSheetRuleData, BrowserIncrementalSnapshotRecord } from '../../../types'
 import { getSerializedNodeId, hasSerializedNode } from '../serialization'
@@ -44,7 +44,9 @@ export function trackStyleSheet(styleSheetCb: StyleSheetCallback): Tracker {
     instrumentGroupingCSSRuleClass(CSSGroupingRule)
   } else {
     instrumentGroupingCSSRuleClass(CSSMediaRule)
-    instrumentGroupingCSSRuleClass(CSSSupportsRule)
+    if (typeof CSSSupportsRule !== 'undefined') {
+      instrumentGroupingCSSRuleClass(CSSSupportsRule)
+    }
   }
 
   function instrumentGroupingCSSRuleClass(cls: GroupingCSSRuleTypes) {
@@ -92,7 +94,7 @@ export function getPathToNestedCSSRule(rule: CSSRule): number[] | undefined {
   const path: number[] = []
   let currentRule = rule
   while (currentRule.parentRule) {
-    const rules = Array.from((currentRule.parentRule as CSSGroupingRule).cssRules)
+    const rules = arrayFrom((currentRule.parentRule as CSSGroupingRule).cssRules)
     const index = rules.indexOf(currentRule)
     path.unshift(index)
     currentRule = currentRule.parentRule
@@ -102,7 +104,7 @@ export function getPathToNestedCSSRule(rule: CSSRule): number[] | undefined {
     return
   }
 
-  const rules = Array.from(currentRule.parentStyleSheet.cssRules)
+  const rules = arrayFrom(currentRule.parentStyleSheet.cssRules)
   const index = rules.indexOf(currentRule)
   path.unshift(index)
 
