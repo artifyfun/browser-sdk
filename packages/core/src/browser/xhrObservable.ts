@@ -8,6 +8,8 @@ import { shallowClone } from '../tools/utils/objectUtils'
 import type { Configuration } from '../domain/configuration'
 import { addEventListener } from './addEventListener'
 
+var isIE = !!(window as any).MSInputMethodContext && !!(window as any).documentMode
+
 export interface XhrOpenContext {
   state: 'open'
   method: string
@@ -50,7 +52,7 @@ function createXhrObservable(configuration: Configuration) {
       (call) => {
         sendXhr(call, configuration, observable)
       },
-      { computeHandlingStack: true }
+      { computeHandlingStack: !isIE }
     )
 
     const { stop: stopInstrumentingAbort } = instrumentMethod(XMLHttpRequest.prototype, 'abort', abortXhr)

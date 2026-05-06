@@ -21,9 +21,12 @@ import type { RumSessionManager } from '../rumSessionManager'
 import type { PropagatorType, TracingOption } from './tracer.types'
 
 // 兼容IE的URL解析函数
+var cachedParser: HTMLAnchorElement | undefined
 function parseURL(url: string) {
-  // 创建一个锚元素来解析URL
-  var parser = document.createElement('a');
+  if (!cachedParser) {
+    cachedParser = document.createElement('a');
+  }
+  var parser = cachedParser;
 
   if (url.indexOf('http://') === 0 || url.indexOf('https://') === 0) {
     parser.href = url;
