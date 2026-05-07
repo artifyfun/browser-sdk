@@ -1,8 +1,6 @@
 import {
   objectEntries,
   shallowClone,
-  performDraw,
-  isNumber,
   assign,
   find,
   getType,
@@ -18,7 +16,11 @@ import type {
   RumXhrStartContext,
 } from '../requestCollection'
 import type { RumSessionManager } from '../rumSessionManager'
+import { getCrypto } from '../../browser/crypto'
 import type { PropagatorType, TracingOption } from './tracer.types'
+import type { SpanIdentifier, TraceIdentifier } from './identifier'
+import { createSpanIdentifier, createTraceIdentifier, toPaddedHexadecimalString } from './identifier'
+import { isTraceSampled } from './sampler'
 
 export interface Tracer {
   traceFetch: (context: Partial<RumFetchStartContext>) => void
@@ -126,24 +128,23 @@ function injectHeadersIfTracingAllowed(
   if (!tracingOption) {
     return
   }
-  context.traceSampled = !isNumber(configuration.traceSampleRate) || performDraw(configuration.traceSampleRate)
+  const traceId = createTraceIdentifier()
+  context.traceSampled = isTraceSampled(traceId, configuration.traceSampleRate)
 
-  if (!context.traceSampled && configuration.traceContextInjection !== TraceContextInjection.ALL) {
+  const shouldInjectHeaders = context.traceSampled || configuration.traceContextInjection === TraceContextInjection.ALL
+
+  if (!shouldInjectHeaders) {
     return
   }
 
-  context.traceId = createTraceIdentifier()
-  context.spanId = createTraceIdentifier()
+  context.traceId = traceId
+  context.spanId = createSpanIdentifier()
 
-  inject(makeTracingHeaders(context, configuration, tracingOption.propagatorTypes))
+  inject(makeTracingHeaders(context.traceId, context.spanId, context.traceSampled!, context.url!, configuration, tracingOption.propagatorTypes))
 }
 
 export function isTracingSupported() {
   return getCrypto() !== undefined
-}
-
-export function getCrypto() {
-  return window.crypto || (window as any).msCrypto
 }
 
 /**
@@ -151,16 +152,13 @@ export function getCrypto() {
  * to prepare the implementation for sampling delegation.
  */
 function makeTracingHeaders(
-  context: any,
+  traceId: TraceIdentifier,
+  spanId: SpanIdentifier,
+  traceSampled: boolean,
+  url: string,
   configuration: RumConfiguration,
   propagatorTypes: PropagatorType[]
 ): TracingHeaders {
-  const {
-    traceId,
-    spanId,
-    traceSampled,
-    url
-  } = context
   const tracingHeaders: TracingHeaders = {}
 
   propagatorTypes.forEach((propagatorType) => {
@@ -169,16 +167,16 @@ function makeTracingHeaders(
       case 'shsnc': {
         assign(tracingHeaders, {
           'x-shsnc-origin': 'rum',
-          'x-shsnc-parent-id': spanId.toDecimalString(),
+          'x-shsnc-parent-id': spanId.toString(),
           'x-shsnc-sampling-priority': traceSampled ? '1' : '0',
-          'x-shsnc-trace-id': traceId.toDecimalString(),
+          'x-shsnc-trace-id': traceId.toString(),
         })
         break
       }
       // https://www.w3.org/TR/trace-context/
       case 'tracecontext': {
         assign(tracingHeaders, {
-          traceparent: `00-0000000000000000${traceId.toPaddedHexadecimalString()}-${spanId.toPaddedHexadecimalString()}-0${
+          traceparent: `00-0000000000000000${toPaddedHexadecimalString(traceId)}-${toPaddedHexadecimalString(spanId)}-0${
             traceSampled ? '1' : '0'
           }`,
         })
@@ -187,16 +185,14 @@ function makeTracingHeaders(
       // https://github.com/openzipkin/b3-propagation
       case 'b3': {
         assign(tracingHeaders, {
-          b3: `${traceId.toPaddedHexadecimalString()}-${spanId.toPaddedHexadecimalString()}-${
-            traceSampled ? '1' : '0'
-          }`,
+          b3: `${toPaddedHexadecimalString(traceId)}-${toPaddedHexadecimalString(spanId)}-${traceSampled ? '1' : '0'}`,
         })
         break
       }
       case 'b3multi': {
         assign(tracingHeaders, {
-          'X-B3-TraceId': traceId.toPaddedHexadecimalString(),
-          'X-B3-SpanId': spanId.toPaddedHexadecimalString(),
+          'X-B3-TraceId': toPaddedHexadecimalString(traceId),
+          'X-B3-SpanId': toPaddedHexadecimalString(spanId),
           'X-B3-Sampled': traceSampled ? '1' : '0',
         })
         break
@@ -211,8 +207,8 @@ function makeTracingHeaders(
           uri = new URL(window.location.href);
           uri.pathname = url;
         }
-        const traceIdStr = String(window.btoa(traceId.toDecimalString()));
-        const segmentId = String(window.btoa(spanId.toDecimalString()));
+        const traceIdStr = String(window.btoa(traceId.toString()));
+        const segmentId = String(window.btoa(spanId.toString()));
         const service = String(window.btoa(configuration.service || 'undefined'));
         const instance = String(window.btoa(configuration.version || 'undefined'));
         const endpoint = String(window.btoa(uri.pathname));
@@ -228,55 +224,3 @@ function makeTracingHeaders(
   })
   return tracingHeaders
 }
-
-/* eslint-disable no-bitwise */
-export interface TraceIdentifier {
-  toDecimalString: () => string
-  toPaddedHexadecimalString: () => string
-}
-
-export function createTraceIdentifier(): TraceIdentifier {
-  const buffer: Uint8Array = new Uint8Array(8)
-  getCrypto().getRandomValues(buffer)
-  buffer[0] = buffer[0] & 0x7f // force 63-bit
-
-  function readInt32(offset: number) {
-    return buffer[offset] * 16777216 + (buffer[offset + 1] << 16) + (buffer[offset + 2] << 8) + buffer[offset + 3]
-  }
-
-  function toString(radix: number) {
-    let high = readInt32(0)
-    let low = readInt32(4)
-    let str = ''
-
-    do {
-      const mod = (high % radix) * 4294967296 + low
-      high = Math.floor(high / radix)
-      low = Math.floor(mod / radix)
-      str = (mod % radix).toString(radix) + str
-    } while (high || low)
-
-    return str
-  }
-
-  /**
-   * Format used everywhere except the trace intake
-   */
-  function toDecimalString() {
-    return toString(10)
-  }
-
-  /**
-   * Format used by OTel headers
-   */
-  function toPaddedHexadecimalString() {
-    const traceId = toString(16)
-    return Array(17 - traceId.length).join('0') + traceId
-  }
-
-  return {
-    toDecimalString,
-    toPaddedHexadecimalString,
-  }
-}
-/* eslint-enable no-bitwise */

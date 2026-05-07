@@ -37,6 +37,7 @@ export type AutoAction = ClickAction
 export function startActionCollection(
   lifeCycle: LifeCycle,
   domMutationObservable: Observable<void>,
+  windowOpenObservable: Observable<void>,
   configuration: RumConfiguration,
   pageStateHistory: PageStateHistory
 ) {
@@ -45,8 +46,15 @@ export function startActionCollection(
   )
 
   let actionContexts: ActionContexts = { findActionId: noop as () => undefined }
+  let stop: () => void = noop
+
   if (configuration.trackUserInteractions) {
-    actionContexts = trackClickActions(lifeCycle, domMutationObservable, configuration).actionContexts
+    ;({ actionContexts, stop } = trackClickActions(
+      lifeCycle,
+      domMutationObservable,
+      windowOpenObservable,
+      configuration
+    ))
   }
 
   return {
@@ -62,6 +70,7 @@ export function startActionCollection(
       )
     },
     actionContexts,
+    stop,
   }
 }
 

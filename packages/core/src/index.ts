@@ -57,6 +57,7 @@ export {
 } from './domain/session/sessionManager'
 export {
   SESSION_TIME_OUT_DELAY, // Exposed for tests
+  SessionPersistence,
 } from './domain/session/sessionConstants'
 export {
   HttpRequest,
@@ -101,6 +102,7 @@ export {
   deleteCookie,
   resetInitCookies,
 } from './browser/cookie'
+export { generateAnonymousId } from './domain/user'
 export { CookieStore, WeakRef, WeakRefConstructor } from './browser/browser.types'
 export { initXhrObservable, XhrCompleteContext, XhrStartContext } from './browser/xhrObservable'
 export {

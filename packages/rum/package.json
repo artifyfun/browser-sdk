@@ -1,6 +1,6 @@
 {
   "name": "@datadog/browser-rum",
-  "version": "5.32.3",
+  "version": "5.35.1",
   "license": "Apache-2.0",
   "main": "cjs/entries/main.js",
   "module": "esm/entries/main.js",
@@ -13,12 +13,12 @@
     "replace-build-env": "node ../../scripts/build/replace-build-env.js"
   },
   "dependencies": {
-    "@datadog/browser-core": "5.32.3",
-    "@datadog/browser-rum-core": "5.32.3",
+    "@datadog/browser-core": "5.35.1",
+    "@datadog/browser-rum-core": "5.35.1",
     "@rrweb/all": "2.0.0-alpha.18"
   },
   "peerDependencies": {
-    "@datadog/browser-logs": "5.32.3"
+    "@datadog/browser-logs": "5.35.1"
   },
   "peerDependenciesMeta": {
     "@datadog/browser-logs": {
@@ -27,11 +27,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/artifyfun/browser-sdk.git",
+    "url": "https://github.com/DataDog/browser-sdk.git",
     "directory": "packages/rum"
   },
   "devDependencies": {
-    "@rrweb/types": "^2.0.0-alpha.18",
     "@types/pako": "2.0.3",
     "pako": "2.1.0"
   },

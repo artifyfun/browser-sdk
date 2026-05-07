@@ -15,6 +15,7 @@ export function sanitizeUser(newUser: Context): Context {
   const keys = ['id', 'name', 'email']
   keys.forEach((key) => {
     if (key in user) {
+      /* eslint-disable @typescript-eslint/no-base-to-string */
       user[key] = String(user[key])
     }
   })
@@ -30,4 +31,8 @@ export function checkUser(newUser: User): boolean {
     display.error('Unsupported user:', newUser)
   }
   return isValid
+}
+
+export function generateAnonymousId() {
+  return Math.floor(Math.random() * Math.pow(2, 53)).toString(36)
 }

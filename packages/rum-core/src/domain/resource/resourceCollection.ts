@@ -7,7 +7,6 @@ import {
   toServerDuration,
   relativeToClocks,
   assign,
-  isNumber,
   createTaskQueue,
 } from '@datadog/browser-core'
 import type { RumConfiguration } from '../configuration'
@@ -24,7 +23,7 @@ import type { RawRumEventCollectedData, LifeCycle } from '../lifeCycle'
 import type { RequestCompleteEvent } from '../requestCollection'
 import type { PageStateHistory } from '../contexts/pageStateHistory'
 import { PageState } from '../contexts/pageStateHistory'
-import { createTraceIdentifier } from '../tracing/tracer'
+import { createSpanIdentifier } from '../tracing/identifier'
 import { matchRequestResourceEntry } from './matchRequestResourceEntry'
 import {
   computeResourceEntryDetails,
@@ -32,6 +31,7 @@ import {
   computeResourceEntryType,
   computeResourceEntrySize,
   computeResourceEntryProtocol,
+  computeResourceEntryDeliveryType,
   isResourceEntryRequestType,
   isLongDataUrl,
   sanitizeDataUrl,
@@ -109,6 +109,7 @@ function processRequest(
         status_code: request.status,
         protocol: matchingTiming && computeResourceEntryProtocol(matchingTiming),
         url: isLongDataUrl(request.url) ? sanitizeDataUrl(request.url) : request.url,
+        delivery_type: matchingTiming && computeResourceEntryDeliveryType(matchingTiming),
       },
       type: RumEventType.RESOURCE as const,
       _dd: {
@@ -157,6 +158,7 @@ function processResourceEntry(
         url: entry.name,
         status_code: discardZeroStatus(entry.responseStatus),
         protocol: computeResourceEntryProtocol(entry),
+        delivery_type: computeResourceEntryDeliveryType(entry),
       },
       type: RumEventType.RESOURCE as const,
       _dd: {
@@ -196,9 +198,9 @@ function computeRequestTracingInfo(request: RequestCompleteEvent, configuration:
   }
   return {
     _dd: {
-      span_id: request.spanId!.toDecimalString(),
-      trace_id: request.traceId!.toDecimalString(),
-      rule_psr: getRulePsr(configuration),
+      span_id: request.spanId!.toString(),
+      trace_id: request.traceId!.toString(),
+      rule_psr: configuration.rulePsr,
     },
   }
 }
@@ -211,17 +213,10 @@ function computeResourceEntryTracingInfo(entry: RumPerformanceResourceTiming, co
   return {
     _dd: {
       trace_id: entry.traceId,
-      span_id: createTraceIdentifier().toDecimalString(),
-      rule_psr: getRulePsr(configuration),
+      span_id: createSpanIdentifier().toString(),
+      rule_psr: configuration.rulePsr,
     },
   }
-}
-
-/**
- * @returns number between 0 and 1 which represents trace sample rate
- */
-function getRulePsr(configuration: RumConfiguration) {
-  return isNumber(configuration.traceSampleRate) ? configuration.traceSampleRate / 100 : undefined
 }
 
 function computeRequestDuration(pageStateHistory: PageStateHistory, startClocks: ClocksState, duration: Duration) {

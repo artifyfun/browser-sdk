@@ -21,6 +21,7 @@ import {
   ExperimentalFeature,
 } from '@datadog/browser-core'
 import { createDOMMutationObservable } from '../browser/domMutationObservable'
+import { createWindowOpenObservable } from '../browser/windowOpenObservable'
 import { startRumAssembly } from '../domain/assembly'
 import { startInternalContext } from '../domain/contexts/internalContext'
 import { LifeCycle, LifeCycleEventType } from '../domain/lifeCycle'
@@ -127,6 +128,9 @@ export function startRum(
   const domMutationObservable = createDOMMutationObservable()
   const locationChangeObservable = createLocationChangeObservable(configuration, location)
   const pageStateHistory = startPageStateHistory(configuration)
+  const { observable: windowOpenObservable, stop: stopWindowOpen } = createWindowOpenObservable()
+  cleanupTasks.push(stopWindowOpen)
+
   const {
     viewHistory,
     urlContexts,
@@ -141,6 +145,7 @@ export function startRum(
     pageStateHistory,
     locationChangeObservable,
     domMutationObservable,
+    windowOpenObservable,
     getCommonContext,
     reportError
   )
@@ -160,6 +165,7 @@ export function startRum(
     configuration,
     location,
     domMutationObservable,
+    windowOpenObservable,
     locationChangeObservable,
     featureFlagContexts,
     pageStateHistory,
@@ -233,15 +239,17 @@ export function startRumEventCollection(
   pageStateHistory: PageStateHistory,
   locationChangeObservable: Observable<LocationChange>,
   domMutationObservable: Observable<void>,
+  windowOpenObservable: Observable<void>,
   getCommonContext: () => CommonContext,
   reportError: (error: RawError) => void
 ) {
   const viewHistory = startViewHistory(lifeCycle)
   const urlContexts = startUrlContexts(lifeCycle, locationChangeObservable, location)
 
-  const { addAction, actionContexts } = startActionCollection(
+  const actionCollection = startActionCollection(
     lifeCycle,
     domMutationObservable,
+    windowOpenObservable,
     configuration,
     pageStateHistory
   )
@@ -255,7 +263,7 @@ export function startRumEventCollection(
     sessionManager,
     viewHistory,
     urlContexts,
-    actionContexts,
+    actionCollection.actionContexts,
     displayContext,
     ciVisibilityContext,
     getCommonContext,
@@ -266,9 +274,10 @@ export function startRumEventCollection(
     viewHistory,
     pageStateHistory,
     urlContexts,
-    addAction,
-    actionContexts,
+    addAction: actionCollection.addAction,
+    actionContexts: actionCollection.actionContexts,
     stop: () => {
+      actionCollection.stop()
       ciVisibilityContext.stop()
       displayContext.stop()
       urlContexts.stop()

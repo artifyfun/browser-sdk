@@ -1,9 +1,15 @@
 import { isChromium } from '../../../tools/utils/browserDetection'
+import { ExperimentalFeature, isExperimentalFeatureEnabled } from '../../../tools/experimentalFeatures'
 import type { CookieOptions } from '../../../browser/cookie'
 import { getCurrentSite, areCookiesAuthorized, getCookie, setCookie } from '../../../browser/cookie'
 import type { InitConfiguration } from '../../configuration'
 import { tryOldCookiesMigration } from '../oldCookiesMigration'
-import { SESSION_EXPIRATION_DELAY, SESSION_TIME_OUT_DELAY } from '../sessionConstants'
+import {
+  SESSION_COOKIE_EXPIRATION_DELAY,
+  SESSION_EXPIRATION_DELAY,
+  SESSION_TIME_OUT_DELAY,
+  SessionPersistence,
+} from '../sessionConstants'
 import type { SessionState } from '../sessionState'
 import { toSessionString, toSessionState, getExpiredSessionState } from '../sessionState'
 import type { SessionStoreStrategy, SessionStoreStrategyType } from './sessionStoreStrategy'
@@ -11,7 +17,7 @@ import { SESSION_STORE_KEY } from './sessionStoreStrategy'
 
 export function selectCookieStrategy(initConfiguration: InitConfiguration): SessionStoreStrategyType | undefined {
   const cookieOptions = buildCookieOptions(initConfiguration)
-  return areCookiesAuthorized(cookieOptions) ? { type: 'Cookie', cookieOptions } : undefined
+  return areCookiesAuthorized(cookieOptions) ? { type: SessionPersistence.COOKIE, cookieOptions } : undefined
 }
 
 export function initCookieStrategy(cookieOptions: CookieOptions): SessionStoreStrategy {
@@ -23,7 +29,7 @@ export function initCookieStrategy(cookieOptions: CookieOptions): SessionStoreSt
     isLockEnabled: isChromium(),
     persistSession: persistSessionCookie(cookieOptions),
     retrieveSession: retrieveSessionCookie,
-    expireSession: () => expireSessionCookie(cookieOptions),
+    expireSession: (sessionState: SessionState) => expireSessionCookie(cookieOptions, sessionState),
   }
 
   tryOldCookiesMigration(cookieStore)
@@ -37,13 +43,22 @@ function persistSessionCookie(options: CookieOptions) {
   }
 }
 
-function expireSessionCookie(options: CookieOptions) {
-  setCookie(SESSION_STORE_KEY, toSessionString(getExpiredSessionState()), SESSION_TIME_OUT_DELAY, options)
+function expireSessionCookie(options: CookieOptions, sessionState: SessionState) {
+  const expiredSessionState = getExpiredSessionState(sessionState)
+  setCookie(
+    SESSION_STORE_KEY,
+    toSessionString(expiredSessionState),
+    isExperimentalFeatureEnabled(ExperimentalFeature.ANONYMOUS_USER_TRACKING)
+      ? SESSION_COOKIE_EXPIRATION_DELAY
+      : SESSION_TIME_OUT_DELAY,
+    options
+  )
 }
 
 function retrieveSessionCookie(): SessionState {
   const sessionString = getCookie(SESSION_STORE_KEY)
-  return toSessionState(sessionString)
+  const sessionState = toSessionState(sessionString)
+  return sessionState
 }
 
 export function buildCookieOptions(initConfiguration: InitConfiguration) {

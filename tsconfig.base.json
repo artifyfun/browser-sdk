@@ -12,7 +12,8 @@
     "jsx": "react",
 
     "types": [],
-    "lib": ["ES2016", "DOM"],
+    "lib": ["ES2020", "DOM"],
+    "skipLibCheck": true,
 
     "paths": {
       "@datadog/browser-core": ["./packages/core/src"],

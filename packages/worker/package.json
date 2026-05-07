@@ -1,17 +1,17 @@
 {
   "name": "@datadog/browser-worker",
-  "version": "5.32.3",
+  "version": "5.35.1",
   "license": "Apache-2.0",
   "main": "bundle/worker.js",
   "scripts": {
     "build": "rm -rf bundle && webpack --mode=production"
   },
   "dependencies": {
-    "@datadog/browser-core": "5.32.3"
+    "@datadog/browser-core": "5.35.1"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/artifyfun/browser-sdk.git",
+    "url": "https://github.com/DataDog/browser-sdk.git",
     "directory": "packages/worker"
   },
   "volta": {
@@ -21,6 +21,6 @@
     "access": "public"
   },
   "devDependencies": {
-    "webpack": "5.96.1"
+    "webpack": "5.97.1"
   }
 }

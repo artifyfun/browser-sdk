@@ -11,6 +11,7 @@ import {
   objectHasValue,
   validateAndBuildConfiguration,
   isSampleRate,
+  isNumber,
 } from '@datadog/browser-core'
 import type { recordOptions } from 'rrweb'
 import type { RumEventDomainContext } from '../../domainContext.types'
@@ -94,7 +95,7 @@ export interface RumInitConfiguration extends InitConfiguration {
   rrwebOptions?: recordOptions<any> | undefined
   allowedSessionReplayRecordUserIds?: string[] | ((userId: string) => boolean) | undefined
   /**
-   * If the session is sampled for Session Replay, only start the recording when `startSessionReplayRecording()` is called, instead of at the beginning of the session.
+   * If the session is sampled for Session Replay, only start the recording when `startSessionReplayRecording()` is called, instead of at the beginning of the session. Default: if startSessionReplayRecording is 0, true; otherwise, false.
    * See [Session Replay Usage](https://docs.datadoghq.com/real_user_monitoring/session_replay/browser/#usage) for further information.
    */
   startSessionReplayRecordingManually?: boolean | undefined
@@ -141,7 +142,8 @@ export type HybridInitConfiguration = Omit<RumInitConfiguration, 'applicationId'
 export interface RumConfiguration extends Configuration {
   // Built from init configuration
   actionNameAttribute: string | undefined
-  traceSampleRate: number | undefined
+  traceSampleRate: number
+  rulePsr: number | undefined
   allowedTracingUrls: TracingOption[]
   excludedActivityUrls: MatchOption[]
   workerUrl: string | undefined
@@ -195,17 +197,23 @@ export function validateAndBuildRumConfiguration(
     return
   }
 
+  const sessionReplaySampleRate = initConfiguration.sessionReplaySampleRate ?? 0
+
   return assign(
     {
       applicationId: initConfiguration.applicationId,
       version: initConfiguration.version || undefined,
       actionNameAttribute: initConfiguration.actionNameAttribute,
-      sessionReplaySampleRate: initConfiguration.sessionReplaySampleRate ?? 0,
+      sessionReplaySampleRate,
       sessionReplayRecorder: initConfiguration.sessionReplayRecorder ?? 'default',
       rrwebOptions: initConfiguration.rrwebOptions || undefined,
       allowedSessionReplayRecordUserIds: initConfiguration.allowedSessionReplayRecordUserIds,
-      startSessionReplayRecordingManually: !!initConfiguration.startSessionReplayRecordingManually,
-      traceSampleRate: initConfiguration.traceSampleRate,
+      startSessionReplayRecordingManually:
+        initConfiguration.startSessionReplayRecordingManually !== undefined
+          ? !!initConfiguration.startSessionReplayRecordingManually
+          : sessionReplaySampleRate === 0,
+      traceSampleRate: initConfiguration.traceSampleRate ?? 100,
+      rulePsr: isNumber(initConfiguration.traceSampleRate) ? initConfiguration.traceSampleRate / 100 : undefined,
       allowedTracingUrls,
       excludedActivityUrls: initConfiguration.excludedActivityUrls ?? [],
       workerUrl: initConfiguration.workerUrl,

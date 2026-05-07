@@ -67,6 +67,13 @@ export interface ViewCreatedEvent {
   startClocks: ClocksState
 }
 
+export interface BeforeViewUpdateEvent {
+  id: string
+  name?: string
+  context?: Context
+  startClocks: ClocksState
+}
+
 export interface ViewEndedEvent {
   endClocks: ClocksState
 }
@@ -93,6 +100,7 @@ export function trackViews(
   location: Location,
   lifeCycle: LifeCycle,
   domMutationObservable: Observable<void>,
+  windowOpenObservable: Observable<void>,
   configuration: RumConfiguration,
   locationChangeObservable: Observable<LocationChange>,
   areViewsTrackedAutomatically: boolean,
@@ -112,6 +120,7 @@ export function trackViews(
     const newlyCreatedView = newView(
       lifeCycle,
       domMutationObservable,
+      windowOpenObservable,
       configuration,
       location,
       loadingType,
@@ -188,6 +197,7 @@ export function trackViews(
 function newView(
   lifeCycle: LifeCycle,
   domMutationObservable: Observable<void>,
+  windowOpenObservable: Observable<void>,
   configuration: RumConfiguration,
   initialLocation: Location,
   loadingType: ViewLoadingType,
@@ -249,6 +259,7 @@ function newView(
   } = trackCommonViewMetrics(
     lifeCycle,
     domMutationObservable,
+    windowOpenObservable,
     configuration,
     scheduleViewUpdate,
     loadingType,
@@ -267,7 +278,17 @@ function newView(
 
   // Initial view update
   triggerViewUpdate()
-  contextManager.changeObservable.subscribe(triggerViewUpdate)
+
+  // View context update should always be throttled
+  contextManager.changeObservable.subscribe(() => {
+    lifeCycle.notify(LifeCycleEventType.BEFORE_VIEW_UPDATED, {
+      id,
+      name,
+      context: contextManager.getContext(),
+      startClocks,
+    })
+    scheduleViewUpdate()
+  })
 
   function triggerViewUpdate() {
     cancelScheduleViewUpdate()

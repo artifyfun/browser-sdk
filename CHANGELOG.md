@@ -18,32 +18,72 @@
 
 ---
 
-## v5.32.3
+## v5.35.1
+
+**Public Changes:**
+
+- ⚡ [RUM-8353] throttle view update in set view context ([#3338](https://github.com/DataDog/browser-sdk/pull/3338)) [RUM] [RUM-REACT] [RUM-SLIM]
 
 **Internal Changes:**
 
-- 调整 rrweb 初始化配置项 [RUM]
-- 修复 切换tab页时的录制逻辑 [LOGS] [RUM] [RUM-REACT] [RUM-SLIM] [WORKER]
+- 🔧 do not merge v5 on staging
 
-## v5.32.1
+## v5.35.0
 
-**Internal Changes:**
+**Public Changes:**
 
-- 调整 rrweb 初始化配置项 [RUM]
-- 修复 切换tab页时的录制逻辑 [LOGS] [RUM] [RUM-REACT] [RUM-SLIM] [WORKER]
-
-## v5.32.1
+- ✨ [RUM-5001] introduce a `sessionPersistence` config option to force using local storage ([#3244](https://github.com/DataDog/browser-sdk/pull/3244)) [LOGS] [RUM] [RUM-REACT] [RUM-SLIM] [WORKER]
+- feat: support custom schema on Electron ([#3204](https://github.com/DataDog/browser-sdk/pull/3204)) [LOGS] [RUM] [RUM-REACT] [RUM-SLIM] [WORKER]
 
 **Internal Changes:**
 
-- 修复 切换tab页时的录制逻辑 [LOGS] [RUM] [RUM-REACT] [RUM-SLIM] [WORKER]
+- Revert "👷 freeze canary deploy ([#3238](https://github.com/DataDog/browser-sdk/pull/3238))" ([#3252](https://github.com/DataDog/browser-sdk/pull/3252))
+- 👷 Update all non-major dependencies ([#3240](https://github.com/DataDog/browser-sdk/pull/3240)) [LOGS] [RUM] [RUM-REACT] [RUM-SLIM] [WORKER]
+- 👷 Update dependency webpack-cli to v6 ([#3241](https://github.com/DataDog/browser-sdk/pull/3241))
+- 👷 freeze canary deploy ([#3238](https://github.com/DataDog/browser-sdk/pull/3238))
+- ✅ fix leak detection issues ([#3245](https://github.com/DataDog/browser-sdk/pull/3245)) [RUM] [RUM-REACT] [RUM-SLIM]
+- 💚 fix CI PR comment ([#3250](https://github.com/DataDog/browser-sdk/pull/3250))
+- ♻️ move traceSampleRate default to config validation ([#3197](https://github.com/DataDog/browser-sdk/pull/3197)) [RUM] [RUM-REACT] [RUM-SLIM]
 
-## v5.32.1
+## v5.34.1
+
+**Public Changes:**
+
+- 🐛 AddError should support all instances of type Error ([#3228](https://github.com/DataDog/browser-sdk/pull/3228)) [LOGS] [RUM] [RUM-REACT] [RUM-SLIM] [WORKER]
+- 🐛 Fix unobserve error for non-Element parameter ([#3218](https://github.com/DataDog/browser-sdk/pull/3218)) [RUM] [RUM-REACT] [RUM-SLIM]
 
 **Internal Changes:**
 
-- 修复 version 命令
-- 修改 package 仓库地址 [LOGS] [RUM] [RUM-REACT] [RUM-SLIM] [WORKER]
+- ⚗️ ⚡️ [RUM-7650] Delay the viewport dimension collection ([#3209](https://github.com/DataDog/browser-sdk/pull/3209)) [LOGS] [RUM] [RUM-REACT] [RUM-SLIM] [WORKER]
+- 👷 Update all non-major dependencies ([#3200](https://github.com/DataDog/browser-sdk/pull/3200)) [RUM-REACT] [WORKER]
+- 👷 [RUM-7634] Add deploy and source maps upload scripts tests ([#3211](https://github.com/DataDog/browser-sdk/pull/3211))
+- 📦️ update typescript-eslint ([#3192](https://github.com/DataDog/browser-sdk/pull/3192)) [LOGS] [RUM] [RUM-REACT] [RUM-SLIM] [WORKER]
+
+## v5.34.0
+
+**Public Changes:**
+
+- 🐛 [RUM-6322] Use window.open observable ([#3215](https://github.com/DataDog/browser-sdk/pull/3215)) [RUM] [RUM-REACT] [RUM-SLIM]
+
+**Internal Changes:**
+
+- ⚗️ ✨ [RUM-6868] implement consistent probabilistic trace sampling ([#3186](https://github.com/DataDog/browser-sdk/pull/3186)) [LOGS] [RUM] [RUM-REACT] [RUM-SLIM] [WORKER]
+- Test anonymous id on staging behind ff ([#3206](https://github.com/DataDog/browser-sdk/pull/3206)) [LOGS] [RUM] [RUM-REACT] [RUM-SLIM] [WORKER]
+
+## v5.33.0
+
+**Public Changes:**
+
+- ✨ [RUM-6182] don't start recording automatically when sample is 0 ([#3162](https://github.com/DataDog/browser-sdk/pull/3162)) [RUM] [RUM-REACT] [RUM-SLIM]
+- ✨ [RUM-6799] Add new delivery type property ([#3166](https://github.com/DataDog/browser-sdk/pull/3166)) [RUM] [RUM-REACT] [RUM-SLIM]
+- 🐛 [RUM-87] AddError should support Error instances coming from other JS contexts ([#3144](https://github.com/DataDog/browser-sdk/pull/3144)) [LOGS] [RUM] [RUM-REACT] [RUM-SLIM] [WORKER]
+
+**Internal Changes:**
+
+- 👷 Update all non-major dependencies ([#3157](https://github.com/DataDog/browser-sdk/pull/3157)) [LOGS] [RUM] [RUM-REACT] [RUM-SLIM] [WORKER]
+- ✅ [RUM-6813]Fix recorder tests ([#3191](https://github.com/DataDog/browser-sdk/pull/3191)) [RUM]
+- ♻️ [RUM-6813] Split the recorder API module ([#3181](https://github.com/DataDog/browser-sdk/pull/3181)) [RUM]
+- Adds a prepare script to @datadog/browser-rum-react ([#3182](https://github.com/DataDog/browser-sdk/pull/3182)) [RUM-REACT]
 
 ## v5.32.0
 

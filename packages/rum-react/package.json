@@ -1,18 +1,19 @@
 {
   "name": "@datadog/browser-rum-react",
-  "version": "5.32.3",
+  "version": "5.35.1",
   "license": "Apache-2.0",
   "main": "cjs/entries/main.js",
   "module": "esm/entries/main.js",
   "types": "cjs/entries/main.d.ts",
   "scripts": {
     "build": "run-p build:cjs build:esm",
-    "build:cjs": "rm -rf cjs && tsc -p tsconfig.cjs.json",
-    "build:esm": "rm -rf esm && tsc -p tsconfig.esm.json"
+    "build:cjs": "rm -rf cjs && tsc -p tsconfig.cjs.json --noCheck",
+    "build:esm": "rm -rf esm && tsc -p tsconfig.esm.json --noCheck",
+    "prepack": "npm run build"
   },
   "dependencies": {
-    "@datadog/browser-core": "5.32.3",
-    "@datadog/browser-rum-core": "5.32.3"
+    "@datadog/browser-core": "5.35.1",
+    "@datadog/browser-rum-core": "5.35.1"
   },
   "peerDependencies": {
     "react": "18",
@@ -33,15 +34,15 @@
     }
   },
   "devDependencies": {
-    "@types/react": "18.3.12",
-    "@types/react-dom": "18.3.1",
+    "@types/react": "18.3.18",
+    "@types/react-dom": "18.3.5",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "react-router-dom": "6.28.0"
+    "react-router-dom": "6.28.1"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/artifyfun/browser-sdk.git",
+    "url": "https://github.com/DataDog/browser-sdk.git",
     "directory": "packages/rum-react"
   },
   "volta": {
